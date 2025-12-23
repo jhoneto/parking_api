@@ -1,0 +1,26 @@
+development:
+  clients:
+    default:
+      database: parking_api_development
+      hosts:
+        - <%= ENV.fetch("MONGODB_HOST", "localhost") %>:<%= ENV.fetch("MONGODB_PORT", "27017") %>
+      options:
+  options:
+
+test:
+  clients:
+    default:
+      database: parking_api_test
+      hosts:
+        - localhost:27017
+
+production:
+  clients:
+    default:
+      database: parking_api_production
+      hosts:
+        - <%= ENV['MONGODB_HOST'] %>
+      options:
+        user: <%= ENV['MONGODB_USER'] %>
+        password: <%= ENV['MONGODB_PASSWORD'] %>
+        auth_source: admin
