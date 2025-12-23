@@ -3,7 +3,7 @@
 class Parking::OutService < Parking::BaseService
   def call
     validate_parking
-    parking = Parking.where(plate: @plate).first
+    parking = Parking.parked_paid_not_left(@plate).first
 
     parking.exit_time = Time.current
     parking.save!

@@ -3,7 +3,7 @@
 class Parking::PayService < Parking::BaseService
   def call
     validate_parking
-    parking = Parking.where(plate: @plate).first
+    parking = Parking.parked_and_not_paid(@plate).first
 
     parking.paid = true
     parking.save!
@@ -18,9 +18,7 @@ class Parking::PayService < Parking::BaseService
   def validate_parking
     super
 
-    parking = Parking.where(plate: @plate).first
-    raise StandardError, "Parking not found" if parking.nil?
-    raise StandardError, "Plate is not parked" if parking.exit_time.present?
-    raise StandardError, "Parking already paid" if parking.paid?
+    raise StandardError, "Parking not found" unless Parking.parked?(@plate)
+    raise StandardError, "Parking already paid" if Parking.parked_paid?(@plate)
   end
 end

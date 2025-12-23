@@ -101,7 +101,7 @@ RSpec.describe Parking::PayService, type: :service do
       it "returns error message" do
         result = described_class.call(plate: parking_with_exit.plate)
 
-        expect(result.errors).to include("Plate is not parked")
+        expect(result.errors).to include("Parking not found")
       end
 
       it "does not change paid status" do
@@ -124,7 +124,7 @@ RSpec.describe Parking::PayService, type: :service do
       it "returns error message" do
         result = described_class.call(plate: paid_and_left_parking.plate)
 
-        expect(result.errors).to include("Plate is not parked")
+        expect(result.errors).to include("Parking not found")
       end
 
       it "does not change paid status" do

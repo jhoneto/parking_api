@@ -33,3 +33,4 @@
 
 # Ignore test coverage reports
 /coverage
+.byebug_history
