@@ -46,7 +46,7 @@ end
 
 group :test do
   gem "database_cleaner-mongoid", "~> 2.0"
-  gem "shoulda-matchers", "~> 6.4"
+  gem "shoulda-matchers", "~> 7.0"
   gem "simplecov", require: false
 end
 
