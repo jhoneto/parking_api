@@ -33,7 +33,7 @@ RSpec.describe Parking::PayService, type: :service do
     end
 
     context "when parking is already paid" do
-      let!(:paid_parking) { create(:parking, :paid) }
+      let!(:paid_parking) { create(:parking, paid: true) }
 
       it "returns failure result" do
         result = described_class.call(plate: paid_parking.plate)
@@ -86,6 +86,52 @@ RSpec.describe Parking::PayService, type: :service do
         result = described_class.call(plate: nil)
 
         expect(result.errors).to be_present
+      end
+    end
+
+    context "when plate is not parked" do
+      let!(:parking_with_exit) { create(:parking, :with_exit, paid: false) }
+
+      it "returns failure result" do
+        result = described_class.call(plate: parking_with_exit.plate)
+
+        expect(result.failure?).to be true
+      end
+
+      it "returns error message" do
+        result = described_class.call(plate: parking_with_exit.plate)
+
+        expect(result.errors).to include("Plate is not parked")
+      end
+
+      it "does not change paid status" do
+        expect {
+          described_class.call(plate: parking_with_exit.plate)
+          parking_with_exit.reload
+        }.not_to change(parking_with_exit, :paid)
+      end
+    end
+
+    context "when plate has no outstanding payment" do
+      let!(:paid_and_left_parking) { create(:parking, :with_exit, :paid) }
+
+      it "returns failure result" do
+        result = described_class.call(plate: paid_and_left_parking.plate)
+
+        expect(result.failure?).to be true
+      end
+
+      it "returns error message" do
+        result = described_class.call(plate: paid_and_left_parking.plate)
+
+        expect(result.errors).to include("Plate is not parked")
+      end
+
+      it "does not change paid status" do
+        expect {
+          described_class.call(plate: paid_and_left_parking.plate)
+          paid_and_left_parking.reload
+        }.not_to change(paid_and_left_parking, :paid)
       end
     end
   end

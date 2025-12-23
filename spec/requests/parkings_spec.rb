@@ -178,7 +178,7 @@ RSpec.describe "Parkings", type: :request do
   end
 
   describe "PUT /parking/:id/out" do
-    let!(:parking) { create(:parking) }
+    let!(:parking) { create(:parking, paid: true) }
 
     context "when parking exists and has no exit time" do
       it "returns ok status" do
@@ -214,7 +214,7 @@ RSpec.describe "Parkings", type: :request do
         put "/parking/#{parking_with_exit.plate}/out", headers: valid_auth_headers, as: :json
         json_response = JSON.parse(response.body)
 
-        expect(json_response["error"]).to eq("Exit already registered")
+        expect(json_response["error"]).to eq("Parking not found")
       end
     end
 
@@ -259,7 +259,7 @@ RSpec.describe "Parkings", type: :request do
     end
 
     context "when parking is already paid" do
-      let!(:paid_parking) { create(:parking, :paid) }
+      let!(:paid_parking) { create(:parking, paid: true) }
 
       it "returns unprocessable entity status" do
         put "/parking/#{paid_parking.plate}/pay", headers: valid_auth_headers, as: :json

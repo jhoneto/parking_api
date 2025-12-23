@@ -1,22 +1,26 @@
 # frozen_string_literal: true
 
-class Parking::PayService < ApplicationService
-  def initialize(plate:)
-    @plate = plate
-  end
-
+class Parking::PayService < Parking::BaseService
   def call
-    parking = Parking.find_by(plate: @plate)
-
-    return failure("Parking already paid") if parking.paid?
+    validate_parking
+    parking = Parking.where(plate: @plate).first
 
     parking.paid = true
     parking.save!
 
     success(parking)
-  rescue Mongoid::Errors::DocumentNotFound => e
-    failure("Parking not found")
   rescue StandardError => e
     failure(e.message)
+  end
+
+  private
+
+  def validate_parking
+    super
+
+    parking = Parking.where(plate: @plate).first
+    raise StandardError, "Parking not found" if parking.nil?
+    raise StandardError, "Plate is not parked" if parking.exit_time.present?
+    raise StandardError, "Parking already paid" if parking.paid?
   end
 end

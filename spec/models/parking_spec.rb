@@ -108,4 +108,57 @@ RSpec.describe Parking, type: :model do
       end
     end
   end
+
+  describe '.parked?' do
+    let!(:parked_vehicle) { create(:parking, plate: 'ABC-1234', exit_time: nil) }
+    let!(:departed_vehicle) { create(:parking, plate: 'XYZ-5678', exit_time: Time.current) }
+
+    context 'when plate is parked' do
+      it 'returns true' do
+        expect(Parking.parked?('ABC-1234')).to be true
+      end
+    end
+
+    context 'when plate has departed' do
+      it 'returns false' do
+        expect(Parking.parked?('XYZ-5678')).to be false
+      end
+    end
+
+    context 'when plate does not exist' do
+      it 'returns false' do
+        expect(Parking.parked?('ZZZ-9999')).to be false
+      end
+    end
+  end
+
+  describe '.outstanding_payment?' do
+    let!(:unpaid_parked) { create(:parking, plate: 'ABC-1234', paid: false, exit_time: nil) }
+    let!(:paid_parked) { create(:parking, plate: 'DEF-5678', paid: true, exit_time: nil) }
+    let!(:unpaid_departed) { create(:parking, plate: 'GHI-9012', paid: false, exit_time: Time.current) }
+
+    context 'when plate is parked and not paid' do
+      it 'returns true' do
+        expect(Parking.outstanding_payment?('ABC-1234')).to be true
+      end
+    end
+
+    context 'when plate is parked but already paid' do
+      it 'returns false' do
+        expect(Parking.outstanding_payment?('DEF-5678')).to be false
+      end
+    end
+
+    context 'when plate has departed and not paid' do
+      it 'returns false' do
+        expect(Parking.outstanding_payment?('GHI-9012')).to be false
+      end
+    end
+
+    context 'when plate does not exist' do
+      it 'returns false' do
+        expect(Parking.outstanding_payment?('ZZZ-9999')).to be false
+      end
+    end
+  end
 end

@@ -96,5 +96,27 @@ RSpec.describe Parking::CreateService, type: :service do
         expect(result.errors).to be_present
       end
     end
+
+    context "when plate is already parked" do
+      let!(:existing_parking) { create(:parking, exit_time: nil) }
+
+      it "returns failure result" do
+        result = described_class.call(plate: existing_parking.plate)
+
+        expect(result.failure?).to be true
+      end
+
+      it "returns error message" do
+        result = described_class.call(plate: existing_parking.plate)
+
+        expect(result.errors).to include("Plate is already parked")
+      end
+
+      it "does not create a new parking" do
+        expect {
+          described_class.call(plate: existing_parking.plate)
+        }.not_to change(Parking, :count)
+      end
+    end
   end
 end
