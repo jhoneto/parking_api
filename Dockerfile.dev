@@ -17,11 +17,18 @@ WORKDIR /app
 # Install bundler
 RUN gem install bundler
 
+# Copy Gemfile and install dependencies
+COPY Gemfile* ./
+RUN bundle install
+
 # Copy environment files
 COPY .env* ./
+
+# Copy application code
+COPY . .
 
 # Expose port
 EXPOSE 3000
 
-# Keep container running
-CMD ["tail", "-f", "/dev/null"]
+# Start Rails server (Rails já tem hot reload nativo em development)
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]

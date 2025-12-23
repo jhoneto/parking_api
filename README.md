@@ -8,34 +8,8 @@ API REST para gerenciamento de estacionamento desenvolvida com Ruby on Rails e M
 - Rails: 8.0.4
 - MongoDB: 7
 
-## Desenvolvimento com DevContainer
 
-Este projeto está configurado para usar DevContainers, facilitando o desenvolvimento com Docker.
-
-### Pré-requisitos
-
-- Docker
-- Docker Compose
-- VS Code com extensão Remote - Containers
-
-### Como Usar
-
-1. Abra o projeto no VS Code
-2. Pressione `F1` e selecione "Dev Containers: Reopen in Container"
-3. Aguarde a construção e inicialização dos containers
-4. Após abrir o container, inicie o servidor Rails:
-   - **Via terminal**: `./bin/dev-server`
-   - **Via VS Code**: Pressione `Ctrl+Shift+P` → "Tasks: Run Task" → "Start Rails Server"
-5. A aplicação estará disponível em `http://localhost:3000`
-
-O DevContainer irá:
-- Construir a imagem Docker usando `Dockerfile.dev`
-- Iniciar o container Rails API e MongoDB
-- Instalar as dependências automaticamente com `bundle install`
-- Configurar as extensões do VS Code
-- Manter os containers rodando em background
-
-## Desenvolvimento Local (sem DevContainer)
+## Desenvolvimento Local
 
 ### Usando Docker Compose
 
@@ -85,6 +59,8 @@ Inclua o header:
 Authorization: Bearer seu_token_aqui
 ```
 
+Caso deseje desabilitar a autenticação, configure a variável de ambiente `SKIP_AUTHENTICATION` como `true`.
+
 ## Testes
 
 ```bash
@@ -132,4 +108,114 @@ Campos:
 
 ## Endpoints
 
-Em desenvolvimento...
+### 1. Criar Estacionamento (Entrada)
+
+**POST** `/parking`
+
+Registra a entrada de um veículo no estacionamento.
+
+```bash
+curl -X POST http://localhost:3000/parking \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+  -d '{
+    "parking": {
+      "plate": "ABC-1234"
+    }
+  }'
+```
+
+**Resposta (201 Created):**
+```json
+{
+  "id": "676957c3f432f70b6b8b4567"
+}
+```
+
+---
+
+### 2. Consultar Estacionamentos por Placa
+
+**GET** `/parking/:plate`
+
+Retorna o histórico de estacionamentos de uma placa específica, ordenado pela data de entrada (mais recente primeiro).
+
+```bash
+curl -X GET http://localhost:3000/parking/ABC-1234 \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+```
+
+**Resposta (200 OK):**
+```json
+[
+  {
+    "id": "676957c3f432f70b6b8b4567",
+    "plate": "ABC-1234",
+    "entry_time": "2025-12-23T10:30:00Z",
+    "exit_time": null,
+    "paid": false
+  }
+]
+```
+
+---
+
+### 3. Registrar Pagamento
+
+**PUT** `/parking/:plate/pay`
+
+Registra o pagamento do estacionamento para uma placa específica.
+
+```bash
+curl -X PUT http://localhost:3000/parking/ABC-1234/pay \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+```
+
+**Resposta (200 OK):**
+```
+(sem corpo - apenas status 200)
+```
+
+---
+
+### 4. Registrar Saída
+
+**PUT** `/parking/:plate/out`
+
+Registra a saída do veículo do estacionamento.
+
+```bash
+curl -X PUT http://localhost:3000/parking/ABC-1234/out \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+```
+
+**Resposta (200 OK):**
+```
+(sem corpo - apenas status 200)
+```
+
+---
+
+### Fluxo Completo de Uso
+
+```bash
+# 1. Registrar entrada do veículo
+curl -X POST http://localhost:3000/parking \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+  -d '{"parking": {"plate": "ABC-1234"}}'
+
+# 2. Consultar histórico da placa
+curl -X GET http://localhost:3000/parking/ABC-1234 \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+
+# 3. Registrar pagamento
+curl -X PUT http://localhost:3000/parking/ABC-1234/pay \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+
+# 4. Registrar saída
+curl -X PUT http://localhost:3000/parking/ABC-1234/out \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+```
+
+
